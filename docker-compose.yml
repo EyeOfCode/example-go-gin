@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:latest
+    container_name: go_postgres
+    environment:
+      POSTGRES_USER: gouser
+      POSTGRES_PASSWORD: gopass
+      POSTGRES_DB: godb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
