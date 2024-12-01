@@ -1,4 +1,12 @@
 basePath: /api/v1
+definitions:
+  service.HealthResponse:
+    description: Health check response
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
 host: localhost:8000
 info:
   contact:
@@ -8,7 +16,22 @@ info:
   termsOfService: https://mywebideal.work
   title: Example Go Project API
   version: "1.0"
-paths: {}
+paths:
+  /api/v1/health:
+    get:
+      consumes:
+      - application/json
+      description: Get the API's health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.HealthResponse'
+      summary: Health check endpoint
+      tags:
+      - health
 schemes:
 - http
 - https

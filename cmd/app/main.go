@@ -25,11 +25,7 @@ import (
 	"syscall"
 	"time"
 
-	_ "example-go-project/docs"
-
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"example-go-project/internal/api"
@@ -66,9 +62,6 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 
 	// Create Gin router
 	router := gin.Default()
-
-	// Setup Swagger
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Setup MongoDB
 	mongoClient, err := setupMongoDB(cfg)

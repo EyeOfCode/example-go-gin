@@ -16,7 +16,43 @@
     },
     "host": "localhost:8000",
     "basePath": "/api/v1",
-    "paths": {},
+    "paths": {
+        "/api/v1/health": {
+            "get": {
+                "description": "Get the API's health status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health check endpoint",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.HealthResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "service.HealthResponse": {
+            "description": "Health check response",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        }
+    },
     "securityDefinitions": {
         "Bearer": {
             "description": "Enter the token with the `Bearer: ` prefix, e.g. \"Bearer abcde12345\".",
