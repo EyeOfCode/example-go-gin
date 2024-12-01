@@ -21,3 +21,14 @@
 
 - run $docker-compose up -d --build (init project or db)
 - run app $go run cmd/app/main.go
+
+## TODO
+
+- use swagger [x]
+- use jwt [ ]
+- use mongodb [ ]
+- use auth [ ]
+- use call external api [ ]
+- use upload file [ ]
+- use docker [ ]
+- set pattern code [ ]
