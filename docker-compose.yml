@@ -1,16 +1,22 @@
-version: "3.8"
+version: "3"
 services:
-  postgres:
-    image: postgres:latest
-    container_name: go_postgres
-    environment:
-      POSTGRES_USER: gouser
-      POSTGRES_PASSWORD: gopass
-      POSTGRES_DB: godb
+  # app:
+  #   build: .
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - mongodb
+  #   env:
+  #     - .env
+  #   volumes:
+  #     - .:/app
+
+  mongodb:
+    image: mongo:latest
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongodb_data:/data/db
 
 volumes:
-  postgres_data:
+  mongodb_data:

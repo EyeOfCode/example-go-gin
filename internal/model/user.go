@@ -1,7 +1,16 @@
 package model
 
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
 type User struct {
-    ID       uint   `json:"id" gorm:"primaryKey"`
-    Email    string `json:"email" gorm:"unique"`
-    Password string `json:"-"` // "-" จะไม่แสดงใน JSON
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Email     string            `bson:"email" json:"email"`
+	Password  string            `bson:"password" json:"-"` // "-" means this field won't be included in JSON
+	Name      string            `bson:"name" json:"name"`
+	CreatedAt time.Time         `bson:"created_at" json:"created_at"`
+	UpdatedAt time.Time         `bson:"updated_at" json:"updated_at"`
 }

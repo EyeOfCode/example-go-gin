@@ -1,0 +1,21 @@
+basePath: /api/v1
+host: localhost:8000
+info:
+  contact:
+    email: champuplove@gmail.com
+    name: API Support
+  description: A RESTful API server with user authentication and MongoDB integration
+  termsOfService: https://mywebideal.work
+  title: Example Go Project API
+  version: "1.0"
+paths: {}
+schemes:
+- http
+- https
+securityDefinitions:
+  Bearer:
+    description: 'Enter the token with the `Bearer: ` prefix, e.g. "Bearer abcde12345".'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

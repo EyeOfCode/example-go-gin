@@ -1,0 +1,28 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "A RESTful API server with user authentication and MongoDB integration",
+        "title": "Example Go Project API",
+        "termsOfService": "https://mywebideal.work",
+        "contact": {
+            "name": "API Support",
+            "email": "champuplove@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8000",
+    "basePath": "/api/v1",
+    "paths": {},
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Enter the token with the `Bearer: ` prefix, e.g. \"Bearer abcde12345\".",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
