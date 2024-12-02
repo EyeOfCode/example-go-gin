@@ -6,16 +6,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-type AuthHandler struct {
-	secretKey string
-	expiresIn string
-}
-
-type JWTClaims struct {
-	UserID string `json:"user_id"`
-	jwt.StandardClaims
-}
-
 func NewAuthHandler(secretKey, expiresIn string) *AuthHandler {
 	return &AuthHandler{
 		secretKey: secretKey,

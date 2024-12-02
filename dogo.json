@@ -1,0 +1,8 @@
+{
+  "WorkingDir": ".",
+  "SourceDir": ["."],
+  "SourceExt": [".c", ".cpp", ".go", ".h"],
+  "BuildCmd": "go build cmd/app/main.go",
+  "RunCmd": "./main",
+  "Decreasing": 1
+}

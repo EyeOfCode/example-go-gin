@@ -1,16 +1,12 @@
 package handlers
 
 import (
-	"example-go-project/internal/repository"
+	userRepository "example-go-project/internal/repository/user"
 
 	"github.com/gin-gonic/gin"
 )
 
-type UserHandler struct {
-    userRepo repository.UserRepository
-}
-
-func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
+func NewUserHandler(userRepo userRepository.UserRepository) *UserHandler {
     return &UserHandler{
         userRepo: userRepo,
     }

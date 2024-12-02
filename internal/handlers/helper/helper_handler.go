@@ -1,11 +1,11 @@
-package service
+package handlers
 
 import (
 	"github.com/gin-gonic/gin"
 )
 
 // @Description Health check response
-type HealthResponse struct {
+type HealthHandler struct {
     Status string `json:"status" example:"ok"`
 }
 
@@ -16,6 +16,6 @@ type HealthResponse struct {
 // @Produce json
 // @Success 200 {object} HealthResponse
 // @Router /api/v1/health [get]
-func HealthCheck(c *gin.Context) {
-    c.JSON(200, HealthResponse{Status: "ok"})
+func (s *HealthHandler) HealthCheck(c *gin.Context) {
+    c.JSON(200, HealthHandler{Status: "ok"})
 }

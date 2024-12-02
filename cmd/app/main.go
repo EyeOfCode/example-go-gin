@@ -29,8 +29,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"example-go-project/internal/api"
-	"example-go-project/internal/handlers"
-	"example-go-project/internal/repository"
+	userHandler "example-go-project/internal/handlers/user"
+	userRepository "example-go-project/internal/repository/user"
 	"example-go-project/pkg/config"
 	"example-go-project/pkg/database"
 )
@@ -71,10 +71,10 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
-	userRepo := repository.NewUserRepository(db)
+	userRepo := userRepository.NewUserRepository(db)
 
 	// Initialize handlers
-	userHandler := handlers.NewUserHandler(userRepo)
+	userHandler := userHandler.NewUserHandler(userRepo)
 
 	// Create application instance with all dependencies
 	application := &api.Application{
