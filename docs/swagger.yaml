@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  service.HealthResponse:
+  handlers.HealthHandler:
     description: Health check response
     properties:
       status:
@@ -28,7 +28,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/service.HealthResponse'
+            $ref: '#/definitions/handlers.HealthHandler'
       summary: Health check endpoint
       tags:
       - health

@@ -9,6 +9,7 @@
 - swagger
 - jwt
 - dogo
+- ratelimit
 
 ## setup
 
@@ -44,10 +45,11 @@
 ## TODO
 
 - use swagger [x]
-- use jwt [ ]
-- use mongodb [ ]
-- use auth [ ]
+- use ratelimit [x]
+- use jwt [x]
+- use mongodb [x]
+- use auth [x]
 - use call external api [ ]
 - use upload file [ ]
-- use docker [ ]
+- use docker [x]
 - set pattern code [ ]

@@ -19,3 +19,9 @@ type JWTClaims struct {
 type UserHandler struct {
     userRepo userRepository.UserRepository
 }
+
+type UserResponse struct {
+    ID    string `json:"id"`
+    Name  string `json:"name"`
+    Email string `json:"email"`
+}

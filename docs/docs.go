@@ -36,7 +36,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/service.HealthResponse"
+                            "$ref": "#/definitions/handlers.HealthHandler"
                         }
                     }
                 }
@@ -44,7 +44,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "service.HealthResponse": {
+        "handlers.HealthHandler": {
             "description": "Health check response",
             "type": "object",
             "properties": {

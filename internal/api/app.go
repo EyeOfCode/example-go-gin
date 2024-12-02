@@ -2,6 +2,7 @@ package api
 
 import (
 	_ "example-go-project/docs"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -15,6 +16,9 @@ func (app *Application) SetupRoutes() {
 	// API version group
 	v1 := app.Router.Group("/api/v1")
 
+	// 100 req/1s all route
+	v1.Use(middleware.RateLimit(100, time.Minute))
+
 	// Public routes
 	public := v1.Group("")
 	{
@@ -22,6 +26,8 @@ func (app *Application) SetupRoutes() {
 
 		// Auth routes
 		auth := public.Group("/auth")
+		// split rate limit auth only
+		auth.Use(middleware.RateLimit(20, time.Minute))
 		{
 			auth.POST("/register", app.UserHandler.Register)
 			auth.POST("/login", app.UserHandler.Login)
