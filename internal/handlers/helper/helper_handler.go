@@ -15,7 +15,7 @@ type HealthHandler struct {
 // @Accept json
 // @Produce json
 // @Success 200 {object} HealthHandler
-// @Router /api/v1/health [get]
+// @Router /health [get]
 func (s *HealthHandler) HealthCheck(c *gin.Context) {
     c.JSON(200, HealthHandler{Status: "ok"})
 }

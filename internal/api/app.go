@@ -2,15 +2,27 @@ package api
 
 import (
 	_ "example-go-project/docs"
+	"example-go-project/pkg/config"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
+	helperHandler "example-go-project/internal/handlers/helper"
+	userHandler "example-go-project/internal/handlers/user"
 	"example-go-project/internal/middleware"
+	"example-go-project/internal/utils"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+type Application struct {
+	Router      *gin.Engine
+	helperHandler *helperHandler.HealthHandler
+	UserHandler *userHandler.UserHandler
+	AuthHandler *utils.AuthHandler
+	Config      *config.Config
+}
 
 func (app *Application) SetupRoutes() {
 	// API version group

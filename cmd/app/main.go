@@ -25,9 +25,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"example-go-project/docs"
 	"example-go-project/internal/api"
 	userHandler "example-go-project/internal/handlers/user"
 	userRepository "example-go-project/internal/repository/user"
@@ -56,12 +58,26 @@ func setupMongoDB(cfg *config.Config) (*mongo.Client, error) {
 func setupServer(cfg *config.Config) (*api.Application, error) {
 	// Set Gin mode to release
 	gin.SetMode(gin.DebugMode)
+
+	docs.UpdateSwaggerHost(cfg.ServerHost, cfg.ServerPort)
+
+	allowCredentials := false
 	if cfg.ServerState == "production" {
 			gin.SetMode(gin.ReleaseMode)
+			allowCredentials = true
 	}
 
 	// Create Gin router
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"*"},
+        AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: allowCredentials,
+        MaxAge:          12 * time.Hour,
+    }))
 
 	// Setup MongoDB
 	mongoClient, err := setupMongoDB(cfg)

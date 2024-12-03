@@ -1,5 +1,30 @@
 basePath: /api/v1
 definitions:
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 30
+        minLength: 3
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  dto.RegisterResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
   handlers.HealthHandler:
     description: Health check response
     properties:
@@ -17,7 +42,29 @@ info:
   title: Example Go Project API
   version: "1.0"
 paths:
-  /api/v1/health:
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Post the API's register
+      parameters:
+      - description: User registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RegisterResponse'
+      summary: Register endpoint
+      tags:
+      - auth
+  /health:
     get:
       consumes:
       - application/json

@@ -34,7 +34,7 @@
 - init package $go mod tidy
 - cp .env.example .env
 - init swagger $swag init -g cmd/app/main.go
-- update api swagger $swag init -g cmd/app/main.go -d ./
+- init cors $go get github.com/gin-contrib/cors
 - build $go build cmd/app/main.go
 
 ## how to use
@@ -50,6 +50,8 @@
 - use mongodb [x]
 - use auth [x]
 - use call external api [ ]
-- use upload file [ ]
+- use upload and read file [ ]
 - use docker [x]
 - set pattern code [ ]
+- schedule [ ]
+- realtime hook [ ]

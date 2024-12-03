@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	userHandler "example-go-project/internal/handlers/user"
+	"example-go-project/internal/utils"
 	"net/http"
 	"strings"
 
@@ -9,7 +9,7 @@ import (
 )
 
 // JWT คือ middleware สำหรับตรวจสอบ token
-func JWT(userHandler *userHandler.AuthHandler) gin.HandlerFunc {
+func JWT(auth *utils.AuthHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -26,7 +26,7 @@ func JWT(userHandler *userHandler.AuthHandler) gin.HandlerFunc {
 		}
 
 		token := bearerToken[1]
-		claims, err := userHandler.ValidateToken(token)
+		claims, err := auth.ValidateToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
