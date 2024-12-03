@@ -10,7 +10,7 @@ import (
 	helperHandler "example-go-project/internal/handlers/helper"
 	userHandler "example-go-project/internal/handlers/user"
 	"example-go-project/internal/middleware"
-	"example-go-project/internal/utils"
+	"example-go-project/pkg/utils"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -44,11 +44,6 @@ func (app *Application) SetupRoutes() {
 			auth.POST("/register", app.UserHandler.Register)
 			auth.POST("/login", app.UserHandler.Login)
 		}
-
-		// test api
-		public.GET("/example", func(c *gin.Context) {
-			c.JSON(200, gin.H{"message": "feature endpoint"})
-		})
 	}
 
 	// Protected routes

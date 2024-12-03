@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"example-go-project/internal/utils"
+	"example-go-project/pkg/utils"
 	"net/http"
 	"strings"
 
