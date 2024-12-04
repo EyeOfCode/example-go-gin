@@ -35,6 +35,7 @@ import (
 	userRepository "example-go-project/internal/repository/user"
 	"example-go-project/pkg/config"
 	"example-go-project/pkg/database"
+	"example-go-project/pkg/utils"
 )
 
 func setupMongoDB(cfg *config.Config) (*mongo.Client, error) {
@@ -69,6 +70,8 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 
 	// Create Gin router
 	router := gin.Default()
+
+	utils.SetupValidator()
 
 	router.Use(cors.New(cors.Config{
         AllowOrigins:     []string{"*"},

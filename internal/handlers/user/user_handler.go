@@ -4,6 +4,7 @@ import (
 	"context"
 	"example-go-project/internal/model"
 	userRepository "example-go-project/internal/repository/user"
+	"example-go-project/pkg/utils"
 	"net/http"
 	"time"
 
@@ -36,15 +37,20 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body dto.RegisterRequest true "User registration details"
-// @Success 200 {object} dto.RegisterResponse
 // @Router /auth/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
     var req dto.RegisterRequest
     
     if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{
-            "error": err.Error(),
-        })
+        errors := utils.FormatValidationError(err)
+        if len(errors) > 0 {
+            c.JSON(http.StatusBadRequest, gin.H{
+                "error": errors,
+            })
+            return
+        }
+        
+        utils.SendError(c, http.StatusInternalServerError, err.Error())
         return
     }
 
@@ -54,24 +60,18 @@ func (h *UserHandler) Register(c *gin.Context) {
     // Check if email already exists
     existingUser, err := h.userRepo.FindByEmail(ctx, req.Email)
     if err != nil && err != mongo.ErrNoDocuments {
-        c.JSON(http.StatusInternalServerError, gin.H{
-            "error": "Failed to check existing user",
-        })
+        utils.SendError(c, http.StatusInternalServerError, "Failed to check existing user")
         return
     }
     if existingUser != nil {
-        c.JSON(http.StatusConflict, gin.H{
-            "error": "Email already registered",
-        })
+        utils.SendError(c, http.StatusBadRequest, "Email already exists")
         return
     }
 
     // Hash password
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{
-            "error": "Failed to process password",
-        })
+        utils.SendError(c, http.StatusInternalServerError, "Failed to hash password")
         return
     }
 
@@ -88,18 +88,17 @@ func (h *UserHandler) Register(c *gin.Context) {
 
     // Save to database
     if err := h.userRepo.Create(ctx, user); err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{
-            "error": "Failed to create user",
-        })
+        utils.SendError(c, http.StatusInternalServerError, err.Error())
         return
     }
 
-    // Return success response
-    c.JSON(http.StatusCreated, dto.RegisterResponse{
+    res := dto.RegisterResponse{
         ID:    user.ID.Hex(),
         Name:  user.Name,
         Email: user.Email,
-    })
+    }
+    
+    utils.SendSuccess(c, http.StatusOK, res)
 }
 
 func (h *UserHandler) GetProfile(c *gin.Context) {
