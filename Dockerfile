@@ -4,11 +4,14 @@ WORKDIR /app
 
 # Install dogo and necessary build tools
 RUN apk add --no-cache git \
-    && go install github.com/liudng/dogo@latest
+    && go install github.com/liudng/dogo@latest \
+    && apk del git
 
 # Copy dependency files first
 COPY go.mod go.sum ./
 RUN go mod download
+
+RUN go mod tidy
 
 # Copy source code
 COPY . .

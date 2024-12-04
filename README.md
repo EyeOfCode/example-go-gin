@@ -55,3 +55,5 @@
 - set pattern code [ ]
 - schedule [ ]
 - realtime hook [ ]
+- unit test [ ]
+- restful api [x]

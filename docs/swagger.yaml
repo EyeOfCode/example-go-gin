@@ -1,7 +1,19 @@
 basePath: /api/v1
 definitions:
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
   dto.RegisterRequest:
     properties:
+      confirm_password:
+        type: string
       email:
         type: string
       name:
@@ -12,18 +24,10 @@ definitions:
         minLength: 6
         type: string
     required:
+    - confirm_password
     - email
     - name
     - password
-    type: object
-  dto.RegisterResponse:
-    properties:
-      email:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
     type: object
   handlers.HealthHandler:
     description: Health check response
@@ -42,6 +46,24 @@ info:
   title: Example Go Project API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Post the API's login
+      parameters:
+      - description: User login
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Login endpoint
+      tags:
+      - auth
   /auth/register:
     post:
       consumes:
@@ -56,11 +78,7 @@ paths:
           $ref: '#/definitions/dto.RegisterRequest'
       produces:
       - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.RegisterResponse'
+      responses: {}
       summary: Register endpoint
       tags:
       - auth
@@ -79,6 +97,19 @@ paths:
       summary: Health check endpoint
       tags:
       - health
+  /user/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get the API's get profile
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Profile endpoint
+      tags:
+      - user
 schemes:
 - http
 - https
