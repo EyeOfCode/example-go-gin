@@ -8,19 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// JWT คือ middleware สำหรับตรวจสอบ token
-func JWT(auth *utils.AuthHandler) gin.HandlerFunc {
+func JWT(auth *utils.AuthHandler, role ...utils.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+			utils.SendError(c, http.StatusUnauthorized, "Authorization header is required")
 			c.Abort()
 			return
 		}
 
 		bearerToken := strings.Split(authHeader, " ")
 		if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
+			utils.SendError(c, http.StatusUnauthorized, "Invalid token format")
 			c.Abort()
 			return
 		}
@@ -28,9 +27,22 @@ func JWT(auth *utils.AuthHandler) gin.HandlerFunc {
 		token := bearerToken[1]
 		claims, err := auth.ValidateToken(token)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			utils.SendError(c, http.StatusUnauthorized, "Invalid token")
 			c.Abort()
 			return
+		}
+
+		if len(role) > 0 {
+			roleSlice := make([]utils.Role, len(claims.Roles))
+			for i, r := range claims.Roles {
+					roleSlice[i] = utils.Role(r)
+			}
+
+			if !utils.IsValidRole(roleSlice, role) {
+					utils.SendError(c, http.StatusForbidden, "Insufficient permissions")
+					c.Abort()
+					return
+			}
 		}
 
 		// Set user ID in context

@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"example-go-project/pkg/utils"
+	"net/http"
 	"sync"
 	"time"
 
@@ -60,13 +62,11 @@ func RateLimit(rate int, interval time.Duration) gin.HandlerFunc {
 
 		// or use user id on jwt
 		// if user, exists := c.Get("user"); exists {
-		//     key = user.(string) // แปลง user ID เป็น string
+		//     key = user.(string) // change user to string
 		// }
 
 		if !limiter.Allow(key) {
-			c.JSON(429, gin.H{
-				"error": "Rate limit exceeded. Please try again later.",
-			})
+			utils.SendError(c, http.StatusTooManyRequests, "Rate limit exceeded. Please try again later.")
 			c.Abort()
 			return
 		}

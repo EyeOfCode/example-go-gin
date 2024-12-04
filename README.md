@@ -8,26 +8,32 @@
 - mongodb
 - swagger
 - jwt
-- dogo
+- air
 - ratelimit
 
 ## setup
 
-- install and setup dogo $go get github.com/liudng/dogo
+- install go and setup path
+- install docker and docker-compose
+- install and setup air $go install github.com/air-verse/air@latest
+- install swag $go install github.com/swaggo/swag/cmd/swag@latest
 
-### crate file dogo.json
+### crate file .air.toml
 
 ```
-{
-    "WorkingDir": "{GOPATH}/src/github.com/liudng/dogo/example",
-    "SourceDir": [
-        "{GOPATH}/src/github.com/liudng/dogo/example"
-    ],
-    "SourceExt": [".c", ".cpp", ".go", ".h"],
-    "BuildCmd": "go build github.com/liudng/dogo/example",
-    "RunCmd": "example.exe",
-    "Decreasing": 1
-}
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/main.exe ./cmd/app"
+bin = "tmp/main.exe"
+full_bin = "./tmp/main.exe"
+include_ext = ["go"]
+exclude_dir = ["tmp"]
+delay = 1000
+
+[screen]
+clear_on_rebuild = true
 ```
 
 - init project $go mod init example-go-project
@@ -40,7 +46,7 @@
 ## how to use
 
 - run $docker-compose up -d --build (init project or db)
-- run app $go run cmd/app/main.go or use $dogo (dogo is build and compiler follow code change)
+- run app $go run cmd/app/main.go or use $air (air is build and compiler follow code change)
 
 ## TODO
 
@@ -52,8 +58,10 @@
 - use call external api [ ]
 - use upload and read file [ ]
 - use docker [x]
-- set pattern code [ ]
+- set pattern code [x]
 - schedule [ ]
 - realtime hook [ ]
 - unit test [ ]
 - restful api [x]
+- relation db [ ]
+- permission roles [x]

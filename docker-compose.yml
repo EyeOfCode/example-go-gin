@@ -1,19 +1,19 @@
 version: "3"
 services:
-  # app:
-  #   build: .
-  #   container_name: go-app
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     mongodb:
-  #       condition: service_started
-  #   env_file:
-  #     - .env
-  #   volumes:
-  #     - .:/app
-  #   networks:
-  #     - app-network
+  app:
+    build: .
+    container_name: go-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongodb:
+        condition: service_started
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - app-network
 
   mongodb:
     image: mongo:latest
@@ -21,7 +21,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongodb_data:/data/db
+      - ./mongodb_data:/data/db
     env_file:
       - .env
     environment:
@@ -37,3 +37,4 @@ networks:
 
 volumes:
   mongodb_data:
+    driver: local

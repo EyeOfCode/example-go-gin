@@ -9,7 +9,7 @@ import (
 
 func SetupValidator() {
     if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-        v.RegisterValidation("passwordvalidator", PasswordValidator)
+        v.RegisterValidation("password_validator", PasswordValidator)
     }
 }
 

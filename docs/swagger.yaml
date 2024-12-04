@@ -23,11 +23,24 @@ definitions:
       password:
         minLength: 6
         type: string
+      roles:
+        items:
+          type: string
+        type: array
     required:
     - confirm_password
     - email
     - name
     - password
+    type: object
+  dto.UpdateProfileRequest:
+    properties:
+      name:
+        maxLength: 30
+        minLength: 3
+        type: string
+    required:
+    - name
     type: object
   handlers.HealthHandler:
     description: Health check response
@@ -108,6 +121,49 @@ paths:
       security:
       - Bearer: []
       summary: Profile endpoint
+      tags:
+      - user
+  /user/profile/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Get the API's delete user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Delete endpoint
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Get the API's update user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Update endpoint
       tags:
       - user
 schemes:

@@ -1,8 +1,0 @@
-{
-  "WorkingDir": ".",
-  "SourceDir": [".", "cmd", "internal", "pkg"],
-  "SourceExt": [".go"],
-  "BuildCmd": "go build cmd/app/main.go",
-  "RunCmd": "./main",
-  "Decreasing": 1
-}

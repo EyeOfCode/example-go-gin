@@ -4,7 +4,8 @@ WORKDIR /app
 
 # Install dogo and necessary build tools
 RUN apk add --no-cache git \
-    && go install github.com/liudng/dogo@latest \
+    && go install github.com/air-verse/air@latest \
+    && go install github.com/swaggo/swag/cmd/swag@latest \
     && apk del git
 
 # Copy dependency files first
@@ -17,8 +18,11 @@ RUN go mod tidy
 COPY . .
 
 # Copy dogo config
-COPY dogo.json* ./
+COPY .air.toml* ./
+
+# Generate swagger
+RUN swag init -g cmd/app/main.go
 
 EXPOSE 8080
 
-CMD ["dogo"]
+CMD ["air"]

@@ -28,6 +28,8 @@ func (app *Application) SetupRoutes() {
 	// API version group
 	v1 := app.Router.Group("/api/v1")
 
+	authJwt := utils.NewAuthHandler(app.Config.JWTSecretKey, app.Config.JWTExpiresIn)
+
 	// 100 req/1s all route
 	v1.Use(middleware.RateLimit(100, time.Minute))
 
@@ -48,13 +50,22 @@ func (app *Application) SetupRoutes() {
 
 	// Protected routes
 	protected := v1.Group("")
-	protected.Use(middleware.JWT(app.AuthHandler))
+	protected.Use(middleware.JWT(authJwt))
 	{
 		// User routes
 		user := protected.Group("/user")
 		{
 			user.GET("/profile", app.UserHandler.GetProfile)
-			user.PUT("/profile", app.UserHandler.UpdateProfile)
+			user.PUT("/profile/:id", app.UserHandler.UpdateProfile)
+		}
+	}
+
+	adminProtected := v1.Group("")
+	adminProtected.Use(middleware.JWT(authJwt, utils.AdminRole))
+	{
+		admin := adminProtected.Group("/user")
+		{
+			admin.DELETE("/profile/:id", app.UserHandler.DeleteUser)
 		}
 	}
 
