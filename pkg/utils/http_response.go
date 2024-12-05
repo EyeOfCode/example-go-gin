@@ -13,7 +13,6 @@ func SendSuccess(c *gin.Context, status int, data interface{}, message ...string
 	response := gin.H{
 		"success": true,
 		"data":    data,
-
 	}
 
 	if len(message) > 0 {

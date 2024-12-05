@@ -110,6 +110,19 @@ paths:
       summary: Health check endpoint
       tags:
       - health
+  /user/list:
+    get:
+      consumes:
+      - application/json
+      description: Get the API's user list
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: User list endpoint
+      tags:
+      - admin
   /user/profile:
     get:
       consumes:

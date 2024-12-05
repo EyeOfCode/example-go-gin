@@ -29,7 +29,7 @@ cmd = "go build -o ./tmp/main.exe ./cmd/app"
 bin = "tmp/main.exe"
 full_bin = "./tmp/main.exe"
 include_ext = ["go"]
-exclude_dir = ["tmp"]
+exclude_dir = ["tmp", "mongodb_data"]
 delay = 1000
 
 [screen]
@@ -65,3 +65,4 @@ clear_on_rebuild = true
 - restful api [x]
 - relation db [ ]
 - permission roles [x]
+- pagination [ ]

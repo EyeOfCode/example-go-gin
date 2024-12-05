@@ -96,6 +96,27 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/list": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get the API's user list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "User list endpoint",
+                "responses": {}
+            }
+        },
         "/user/profile": {
             "get": {
                 "security": [

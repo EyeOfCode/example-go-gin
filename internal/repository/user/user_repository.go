@@ -16,6 +16,8 @@ type UserRepository interface {
 	Update(ctx context.Context, user *model.User) error
 	Delete(ctx context.Context, id string) error
 	FindOne(ctx context.Context, query bson.M) (*model.User, error)
+	FindAll(ctx context.Context, query bson.M) ([]model.User, error)
+	Count(ctx context.Context, query bson.M) (int64, error)
 }
 
 type userRepository struct {
@@ -85,4 +87,22 @@ func (r *userRepository) Delete(ctx context.Context, id string) error {
 
 	_, err = r.collection.DeleteOne(ctx, bson.M{"_id": objectID})
 	return err
+}
+
+func (r *userRepository) FindAll(ctx context.Context, query bson.M) ([]model.User, error) {
+	var users []model.User
+	cursor, err := r.collection.Find(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &users); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (r *userRepository) Count(ctx context.Context, query bson.M) (int64, error) {
+	return r.collection.CountDocuments(ctx, query)
 }

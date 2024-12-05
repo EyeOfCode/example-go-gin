@@ -66,6 +66,7 @@ func (app *Application) SetupRoutes() {
 		admin := adminProtected.Group("/user")
 		{
 			admin.DELETE("/profile/:id", app.UserHandler.DeleteUser)
+			admin.GET("/list", app.UserHandler.UserList)
 		}
 	}
 

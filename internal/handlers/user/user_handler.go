@@ -12,6 +12,7 @@ import (
 	"example-go-project/internal/dto"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -297,4 +298,50 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
     }
     
     utils.SendSuccess(c, http.StatusOK, nil, "User deleted successfully")
+}
+
+//TODO implement
+// @Summary User list endpoint
+// @Description Get the API's user list
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Router /user/list [get]
+func (h *UserHandler) UserList(c *gin.Context) {
+    page, pageSize := utils.PaginationParams(c)
+
+    var filter dto.UserFilter
+    if err := c.ShouldBindQuery(&filter); err != nil {
+        utils.SendError(c, http.StatusBadRequest, "Invalid filter parameters")
+        return
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    mongoFilter := bson.D{}
+    if filter.Name != "" {
+        mongoFilter = append(mongoFilter, bson.E{
+            Key: "name", 
+            Value: bson.D{{
+                Key: "$regex", 
+                Value: primitive.Regex{Pattern: filter.Name, Options: "i"},
+            }},
+        })
+    }
+
+    total, err := h.userRepo.Count(ctx, mongoFilter)
+    if err != nil {
+        utils.SendError(c, http.StatusInternalServerError, "Failed to count users: "+err.Error())
+        return
+    }
+
+    users, err := h.userRepo.FindAll(ctx, mongoFilter)
+    if err != nil {
+        utils.SendError(c, http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    // utils.SendSuccess(c, http.StatusOK, users)
 }
