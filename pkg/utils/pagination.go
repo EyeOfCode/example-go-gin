@@ -28,10 +28,6 @@ func PaginationParams(c *gin.Context) (page, pageSize int) {
 		pageSize = 10
 	}
 
-	if pageSize > 100 {
-		pageSize = 100
-	}
-
 	return page, pageSize
 }
 

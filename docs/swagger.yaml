@@ -1,5 +1,20 @@
 basePath: /api/v1
 definitions:
+  dto.CreateProductRequest:
+    properties:
+      name:
+        maxLength: 30
+        minLength: 3
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+    required:
+    - name
+    - price
+    - stock
+    type: object
   dto.LoginRequest:
     properties:
       email:
@@ -110,11 +125,81 @@ paths:
       summary: Health check endpoint
       tags:
       - health
+  /product:
+    get:
+      consumes:
+      - application/json
+      description: Get the API's get products
+      parameters:
+      - default: 1
+        description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 'Page size (default: 10)'
+        in: query
+        name: pageSize
+        type: integer
+      - description: Filter by product name
+        in: query
+        name: name
+        type: string
+      - description: Filter by product price
+        in: query
+        name: price
+        type: number
+      - description: Filter by product user ID
+        in: query
+        name: user_id
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Get products endpoint
+      tags:
+      - product
+    post:
+      consumes:
+      - application/json
+      description: Post the API's create product
+      parameters:
+      - description: Product details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProductRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Create product endpoint
+      tags:
+      - product
   /user/list:
     get:
       consumes:
       - application/json
       description: Get the API's user list
+      parameters:
+      - default: 1
+        description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 'Page size (default: 10)'
+        in: query
+        name: pageSize
+        type: integer
+      - description: Filter by user name
+        in: query
+        name: name
+        type: string
       produces:
       - application/json
       responses: {}

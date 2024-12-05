@@ -31,11 +31,14 @@ import (
 
 	"example-go-project/docs"
 	"example-go-project/internal/api"
-	userHandler "example-go-project/internal/handlers/user"
-	userRepository "example-go-project/internal/repository/user"
 	"example-go-project/pkg/config"
 	"example-go-project/pkg/database"
 	"example-go-project/pkg/utils"
+
+	productHandler "example-go-project/internal/handlers/product"
+	userHandler "example-go-project/internal/handlers/user"
+	productRepository "example-go-project/internal/repository/product"
+	userRepository "example-go-project/internal/repository/user"
 )
 
 func setupMongoDB(cfg *config.Config) (*mongo.Client, error) {
@@ -91,14 +94,17 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
 	userRepo := userRepository.NewUserRepository(db)
+	productRepo := productRepository.NewProductRepository(db, userRepo)
 
 	// Initialize handlers
 	userHandler := userHandler.NewUserHandler(userRepo)
+	productHandler := productHandler.NewProductHandler(productRepo, userRepo)
 
 	// Create application instance with all dependencies
 	application := &api.Application{
 		Router:      router,
 		UserHandler: userHandler,
+		ProductHandler: productHandler,
 		Config:      cfg,
 	}
 

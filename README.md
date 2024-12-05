@@ -63,6 +63,6 @@ clear_on_rebuild = true
 - realtime hook [ ]
 - unit test [ ]
 - restful api [x]
-- relation db [ ]
+- relation db [x]
 - permission roles [x]
-- pagination [ ]
+- pagination [x]

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	helperHandler "example-go-project/internal/handlers/helper"
+	productHandlers "example-go-project/internal/handlers/product"
 	userHandler "example-go-project/internal/handlers/user"
 	"example-go-project/internal/middleware"
 	"example-go-project/pkg/utils"
@@ -21,6 +22,7 @@ type Application struct {
 	helperHandler *helperHandler.HealthHandler
 	UserHandler *userHandler.UserHandler
 	AuthHandler *utils.AuthHandler
+	ProductHandler *productHandlers.ProductHandler
 	Config      *config.Config
 }
 
@@ -67,6 +69,11 @@ func (app *Application) SetupRoutes() {
 		{
 			admin.DELETE("/profile/:id", app.UserHandler.DeleteUser)
 			admin.GET("/list", app.UserHandler.UserList)
+		}
+		product := adminProtected.Group("/product")
+		{
+			product.POST("/", app.ProductHandler.CreateProduct)
+			product.GET("/", app.ProductHandler.GetProducts)
 		}
 	}
 

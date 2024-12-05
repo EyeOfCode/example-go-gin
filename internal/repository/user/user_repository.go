@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type UserRepository interface {
@@ -16,8 +17,8 @@ type UserRepository interface {
 	Update(ctx context.Context, user *model.User) error
 	Delete(ctx context.Context, id string) error
 	FindOne(ctx context.Context, query bson.M) (*model.User, error)
-	FindAll(ctx context.Context, query bson.M) ([]model.User, error)
-	Count(ctx context.Context, query bson.M) (int64, error)
+	FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.User, error)
+	Count(ctx context.Context, query bson.D) (int64, error)
 }
 
 type userRepository struct {
@@ -89,20 +90,21 @@ func (r *userRepository) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-func (r *userRepository) FindAll(ctx context.Context, query bson.M) ([]model.User, error) {
-	var users []model.User
-	cursor, err := r.collection.Find(ctx, query)
-	if err != nil {
-		return nil, err
-	}
+func (r *userRepository) FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.User, error) {
+    cursor, err := r.collection.Find(ctx, query, opts)
+    if err != nil {
+        return nil, err
+    }
+    defer cursor.Close(ctx)
 
-	if err = cursor.All(ctx, &users); err != nil {
-		return nil, err
-	}
+    var users []model.User
+    if err := cursor.All(ctx, &users); err != nil {
+        return nil, err
+    }
 
-	return users, nil
+    return users, nil
 }
 
-func (r *userRepository) Count(ctx context.Context, query bson.M) (int64, error) {
+func (r *userRepository) Count(ctx context.Context, query bson.D) (int64, error) {
 	return r.collection.CountDocuments(ctx, query)
 }

@@ -15,6 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -35,7 +36,7 @@ func NewUserHandler(userRepo userRepository.UserRepository) *UserHandler {
 // @Produce json
 // @Param request body dto.LoginRequest true "User login"
 // @Router /auth/login [post]
-func (h *UserHandler) Login(c *gin.Context) {
+func (u *UserHandler) Login(c *gin.Context) {
     var req dto.LoginRequest
 
     if err := c.ShouldBindJSON(&req); err != nil {
@@ -54,7 +55,7 @@ func (h *UserHandler) Login(c *gin.Context) {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
 
-    user, err := h.userRepo.FindByEmail(ctx, req.Email)
+    user, err := u.userRepo.FindByEmail(ctx, req.Email)
     if err != nil {
         utils.SendError(c, http.StatusInternalServerError, "Failed to find user")
         return
@@ -89,7 +90,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Produce json
 // @Param request body dto.RegisterRequest true "User registration details"
 // @Router /auth/register [post]
-func (h *UserHandler) Register(c *gin.Context) {
+func (u *UserHandler) Register(c *gin.Context) {
     var req dto.RegisterRequest
     
     if err := c.ShouldBindJSON(&req); err != nil {
@@ -109,7 +110,7 @@ func (h *UserHandler) Register(c *gin.Context) {
     defer cancel()
 
     // Check if email already exists
-    existingUser, err := h.userRepo.FindByEmail(ctx, req.Email)
+    existingUser, err := u.userRepo.FindByEmail(ctx, req.Email)
     if err != nil && err != mongo.ErrNoDocuments {
         utils.SendError(c, http.StatusInternalServerError, "Failed to check existing user")
         return
@@ -143,7 +144,7 @@ func (h *UserHandler) Register(c *gin.Context) {
     }
 
     // Save to database
-    if err := h.userRepo.Create(ctx, user); err != nil {
+    if err := u.userRepo.Create(ctx, user); err != nil {
         utils.SendError(c, http.StatusInternalServerError, err.Error())
         return
     }
@@ -165,7 +166,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 // @Produce json
 // @Security Bearer
 // @Router /user/profile [get]
-func (h *UserHandler) GetProfile(c *gin.Context) {
+func (u *UserHandler) GetProfile(c *gin.Context) {
     userID, _ := c.Get("userID")
     
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -177,7 +178,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
         return
     }
 
-    user, err := h.userRepo.FindByID(ctx, userIDStr)
+    user, err := u.userRepo.FindByID(ctx, userIDStr)
     if err != nil {
         utils.SendError(c, http.StatusInternalServerError, err.Error())
         return
@@ -202,7 +203,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 // @Param id path string true "User ID"
 // @Param request body dto.UpdateProfileRequest true "User update details"
 // @Router /user/profile/{id} [put]
-func (h *UserHandler) UpdateProfile(c *gin.Context) {
+func (u *UserHandler) UpdateProfile(c *gin.Context) {
     var req dto.UpdateProfileRequest
     id := c.Param("id")
 
@@ -228,7 +229,7 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
         return
     }
 
-    user, err := h.userRepo.FindByID(ctx, objID.Hex())
+    user, err := u.userRepo.FindByID(ctx, objID.Hex())
     if err != nil {
         utils.SendError(c, http.StatusInternalServerError, err.Error())
         return
@@ -245,7 +246,7 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
         CreatedAt: user.CreatedAt,
     }
 
-    if err := h.userRepo.Update(ctx, payload); err != nil {
+    if err := u.userRepo.Update(ctx, payload); err != nil {
         utils.SendError(c, http.StatusInternalServerError, err.Error())
         return
     }
@@ -268,7 +269,7 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 // @Security Bearer
 // @Param id path string true "User ID"
 // @Router /user/profile/{id} [delete]
-func (h *UserHandler) DeleteUser(c *gin.Context) {
+func (u *UserHandler) DeleteUser(c *gin.Context) {
     id := c.Param("id")
     userID, _ := c.Get("userID")
     
@@ -281,7 +282,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
 
-    user, err := h.userRepo.FindByID(ctx, objID.Hex())
+    user, err := u.userRepo.FindByID(ctx, objID.Hex())
     if err != nil {
         utils.SendError(c, http.StatusInternalServerError, err.Error())
         return
@@ -292,7 +293,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
         return
     }
     
-    if err := h.userRepo.Delete(ctx, user.ID.Hex()); err != nil {
+    if err := u.userRepo.Delete(ctx, user.ID.Hex()); err != nil {
         utils.SendError(c, http.StatusInternalServerError, err.Error())
         return
     }
@@ -300,15 +301,17 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
     utils.SendSuccess(c, http.StatusOK, nil, "User deleted successfully")
 }
 
-//TODO implement
 // @Summary User list endpoint
 // @Description Get the API's user list
 // @Tags admin
 // @Accept json
 // @Produce json
 // @Security Bearer
+// @Param page query int false "Page number (default: 1)" default(1)
+// @Param pageSize query int false "Page size (default: 10)" default(10)
+// @Param name query string false "Filter by user name"
 // @Router /user/list [get]
-func (h *UserHandler) UserList(c *gin.Context) {
+func (u *UserHandler) UserList(c *gin.Context) {
     page, pageSize := utils.PaginationParams(c)
 
     var filter dto.UserFilter
@@ -331,17 +334,23 @@ func (h *UserHandler) UserList(c *gin.Context) {
         })
     }
 
-    total, err := h.userRepo.Count(ctx, mongoFilter)
+    total, err := u.userRepo.Count(ctx, mongoFilter)
     if err != nil {
         utils.SendError(c, http.StatusInternalServerError, "Failed to count users: "+err.Error())
         return
     }
 
-    users, err := h.userRepo.FindAll(ctx, mongoFilter)
+    opts := options.Find().
+        SetSkip(int64((page - 1) * pageSize)).
+        SetLimit(int64(pageSize)).
+        SetSort(bson.D{{Key: "created_at", Value: -1}})
+
+    users, err := u.userRepo.FindAll(ctx, mongoFilter, opts)
     if err != nil {
         utils.SendError(c, http.StatusInternalServerError, err.Error())
         return
     }
 
-    // utils.SendSuccess(c, http.StatusOK, users)
+    response := utils.CreatePagination(page, pageSize, total, users)
+    utils.SendSuccess(c, http.StatusOK, response)
 }
