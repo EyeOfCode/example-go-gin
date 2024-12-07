@@ -52,9 +52,9 @@ clear_on_rebuild = true
 
 ## run test
 
-- $go test ./internal/handlers/test
-- $go test -race ./internal/handlers/test -v -cover
-- $go test -race ./internal/handlers/test -v -coverprofile=coverage.out && go tool cover -html=coverage.out
+- $go test ./internal/handlers/user/test
+- $go test -race ./internal/handlers/user/test -v -cover
+- $go test -race ./internal/handlers/user/test -v -coverprofile=coverage.out && go tool cover -html=coverage.out
 
 ## TODO
 
