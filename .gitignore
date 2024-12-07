@@ -1,3 +1,4 @@
 .env
 mongodb_data
 tmp
+coverage.out
