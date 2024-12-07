@@ -57,7 +57,7 @@ func (u *UserHandler) Login(c *gin.Context) {
 
     user, err := u.userRepo.FindByEmail(ctx, req.Email)
     if err != nil {
-        utils.SendError(c, http.StatusInternalServerError, "Failed to find user")
+        utils.SendError(c, http.StatusNotFound, "Failed to find user")
         return
     }
 

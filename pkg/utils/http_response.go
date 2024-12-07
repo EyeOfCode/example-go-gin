@@ -46,7 +46,9 @@ func FormatValidationError(err error) []string {
                 errorMessages = append(errorMessages, fmt.Sprintf("%s must be at least %s characters", e.Field(), e.Param()))
             case "max":
                 errorMessages = append(errorMessages, fmt.Sprintf("%s must not exceed %s characters", e.Field(), e.Param()))
-            case "passwordvalidator":
+            case "eqfield":
+                errorMessages = append(errorMessages, fmt.Sprintf("%s must be equal to %s", e.Field(), e.Param()))
+            case "password_validator":
                 errorMessages = append(errorMessages, "Password must contain at least one uppercase letter, one number, and one special character")
             }
         }

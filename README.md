@@ -50,6 +50,12 @@ clear_on_rebuild = true
 - run $docker-compose up -d --build (init project or db)
 - run app $go run cmd/app/main.go or use $air (air is build and compiler follow code change)
 
+## run test
+
+- $go test ./internal/handlers/test
+- $go test -race ./internal/handlers/test -v -cover
+- $go test -race ./internal/handlers/test -v -coverprofile=coverage.out && go tool cover -html=coverage.out
+
 ## TODO
 
 - use swagger [x]
@@ -63,7 +69,7 @@ clear_on_rebuild = true
 - set pattern code [x]
 - schedule [ ]
 - realtime hook [ ]
-- unit test [ ]
+- unit test [x]
 - restful api [x]
 - relation db [x]
 - permission roles [x]
