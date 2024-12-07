@@ -25,6 +25,13 @@ definitions:
     - email
     - password
     type: object
+  dto.PingRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
   dto.RegisterRequest:
     properties:
       confirm_password:
@@ -125,6 +132,24 @@ paths:
       summary: Health check endpoint
       tags:
       - health
+  /ping:
+    post:
+      consumes:
+      - application/json
+      description: Post the API's ping
+      parameters:
+      - description: Ping details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PingRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Ping endpoint
+      tags:
+      - ping
   /product:
     get:
       consumes:

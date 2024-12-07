@@ -9,7 +9,9 @@
 - swagger
 - jwt
 - air
-- ratelimit
+- rate limit
+- websocket
+- local file storage or firebase
 
 ## setup
 
@@ -55,7 +57,7 @@ clear_on_rebuild = true
 - use jwt [x]
 - use mongodb [x]
 - use auth [x]
-- use call external api [ ]
+- use call external api [x]
 - use upload and read file [ ]
 - use docker [x]
 - set pattern code [x]

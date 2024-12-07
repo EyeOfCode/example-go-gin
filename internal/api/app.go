@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	helperHandler "example-go-project/internal/handlers/helper"
+	pingHandler "example-go-project/internal/handlers/ping"
 	productHandlers "example-go-project/internal/handlers/product"
 	userHandler "example-go-project/internal/handlers/user"
 	"example-go-project/internal/middleware"
@@ -22,6 +23,7 @@ type Application struct {
 	helperHandler *helperHandler.HealthHandler
 	UserHandler *userHandler.UserHandler
 	AuthHandler *utils.AuthHandler
+	PingHandler *pingHandler.PingHandler
 	ProductHandler *productHandlers.ProductHandler
 	Config      *config.Config
 }
@@ -47,6 +49,11 @@ func (app *Application) SetupRoutes() {
 		{
 			auth.POST("/register", app.UserHandler.Register)
 			auth.POST("/login", app.UserHandler.Login)
+		}
+
+		ping := public.Group("/ping")
+		{
+			ping.POST("/", app.PingHandler.Ping)
 		}
 	}
 

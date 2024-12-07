@@ -96,6 +96,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/ping": {
+            "post": {
+                "description": "Post the API's ping",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ping"
+                ],
+                "summary": "Ping endpoint",
+                "parameters": [
+                    {
+                        "description": "Ping details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PingRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/product": {
             "get": {
                 "security": [
@@ -346,6 +373,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PingRequest": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "url": {
                     "type": "string"
                 }
             }

@@ -35,9 +35,11 @@ import (
 	"example-go-project/pkg/database"
 	"example-go-project/pkg/utils"
 
+	pingHandler "example-go-project/internal/handlers/ping"
 	productHandler "example-go-project/internal/handlers/product"
 	userHandler "example-go-project/internal/handlers/user"
 	productRepository "example-go-project/internal/repository/product"
+	serviceRepository "example-go-project/internal/repository/service"
 	userRepository "example-go-project/internal/repository/user"
 )
 
@@ -95,16 +97,19 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 	db := mongoClient.Database(cfg.MongoDBDatabase)
 	userRepo := userRepository.NewUserRepository(db)
 	productRepo := productRepository.NewProductRepository(db, userRepo)
+	serviceRepo := serviceRepository.NewServiceRepository()
 
 	// Initialize handlers
 	userHandler := userHandler.NewUserHandler(userRepo)
 	productHandler := productHandler.NewProductHandler(productRepo, userRepo)
+	pingHandler := pingHandler.NewPingHandler(serviceRepo)
 
 	// Create application instance with all dependencies
 	application := &api.Application{
 		Router:      router,
 		UserHandler: userHandler,
 		ProductHandler: productHandler,
+		PingHandler: pingHandler,
 		Config:      cfg,
 	}
 
