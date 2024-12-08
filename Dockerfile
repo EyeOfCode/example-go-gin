@@ -2,7 +2,7 @@ FROM golang:1.23-alpine
 
 WORKDIR /app
 
-# Install dogo and necessary build tools
+# Install tools
 RUN apk add --no-cache git \
     && go install github.com/air-verse/air@latest \
     && go install github.com/swaggo/swag/cmd/swag@latest \
@@ -17,7 +17,7 @@ RUN go mod tidy
 # Copy source code
 COPY . .
 
-# Copy dogo config
+# Copy air config
 COPY .air.toml* ./
 
 # Generate swagger
