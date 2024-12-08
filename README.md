@@ -67,8 +67,6 @@ clear_on_rebuild = true
 - use upload and read file [x]
 - use docker [x]
 - set pattern code [x]
-- schedule [ ]
-- realtime hook [ ]
 - unit test [x]
 - restful api [x]
 - relation db [x]
