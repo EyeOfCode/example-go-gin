@@ -132,6 +132,59 @@ paths:
       summary: Health check endpoint
       tags:
       - health
+  /local_upload:
+    get:
+      consumes:
+      - application/json
+      description: Get all files from the server
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Get all files
+      tags:
+      - uploads
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload multiple files to the server
+      parameters:
+      - collectionFormat: csv
+        description: Multiple files to upload
+        in: formData
+        items:
+          type: file
+        name: files
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Upload multiple files
+      tags:
+      - uploads
+  /local_upload/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a file from the server
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Delete a file
+      tags:
+      - uploads
   /ping:
     post:
       consumes:

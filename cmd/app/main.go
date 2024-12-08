@@ -37,7 +37,9 @@ import (
 
 	pingHandler "example-go-project/internal/handlers/ping"
 	productHandler "example-go-project/internal/handlers/product"
+	uploadHandler "example-go-project/internal/handlers/upload"
 	userHandler "example-go-project/internal/handlers/user"
+	fileRepository "example-go-project/internal/repository/files"
 	productRepository "example-go-project/internal/repository/product"
 	serviceRepository "example-go-project/internal/repository/service"
 	userRepository "example-go-project/internal/repository/user"
@@ -98,11 +100,13 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 	userRepo := userRepository.NewUserRepository(db)
 	productRepo := productRepository.NewProductRepository(db, userRepo)
 	serviceRepo := serviceRepository.NewServiceRepository()
+	fileRepo := fileRepository.NewLocalFileRepository(db)
 
 	// Initialize handlers
 	userHandler := userHandler.NewUserHandler(userRepo)
 	productHandler := productHandler.NewProductHandler(productRepo, userRepo)
 	pingHandler := pingHandler.NewPingHandler(serviceRepo)
+	uploadHandler := uploadHandler.NewUploadHandler(fileRepo, userRepo)
 
 	// Create application instance with all dependencies
 	application := &api.Application{
@@ -110,6 +114,7 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 		UserHandler: userHandler,
 		ProductHandler: productHandler,
 		PingHandler: pingHandler,
+		UploadHandler: uploadHandler,
 		Config:      cfg,
 	}
 
