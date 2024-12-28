@@ -20,7 +20,7 @@
 - install and setup air $go install github.com/air-verse/air@latest
 - install swag $go install github.com/swaggo/swag/cmd/swag@latest
 
-### crate file .air.toml
+### create file .air.toml
 
 ```
 root = "."
@@ -56,7 +56,7 @@ clear_on_rebuild = true
 - $go test -race ./internal/handlers/user/test -v -cover
 - $go test -race ./internal/handlers/user/test -v -coverprofile=coverage.out && go tool cover -html=coverage.out
 
-## TODO
+## Feature
 
 - use swagger [x]
 - use ratelimit [x]
