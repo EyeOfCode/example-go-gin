@@ -3,3 +3,4 @@ mongodb_data
 tmp
 coverage.out
 uploads
+go.sum
