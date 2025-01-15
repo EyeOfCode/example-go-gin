@@ -14,7 +14,7 @@ type AuthHandler struct {
 type JWTClaims struct {
 	UserID string `json:"user_id"`
 	Roles  []string
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func NewAuthHandler(secretKey, expiresIn string) *AuthHandler {
@@ -29,8 +29,8 @@ func (s *AuthHandler) GenerateToken(userID string, roles []string) (string, erro
 	claims := JWTClaims{
 		UserID: userID,
 		Roles:  roles,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(expDuration).Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expDuration)),
 		},
 	}
 

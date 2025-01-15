@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"example-go-project/internal/model"
-	repository "example-go-project/internal/repository/user"
+	"example-go-project/internal/repository"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,13 +18,13 @@ type ProductRepository interface {
 
 type productRepository struct {
 	collection *mongo.Collection
-	user repository.UserRepository
+	user       repository.UserRepository
 }
 
 func NewProductRepository(db *mongo.Database, user repository.UserRepository) ProductRepository {
 	return &productRepository{
 		collection: db.Collection("products"),
-		user: user,
+		user:       user,
 	}
 }
 
@@ -46,15 +46,15 @@ func (p *productRepository) FindAll(ctx context.Context, query bson.D, opts *opt
 	}
 
 	for i := range products {
-			user, err := p.user.FindByID(ctx, products[i].UserID.Hex())
-			if err != nil {
-					continue
-			}
-			products[i].User = &model.UserResponseOnProduct{
-				ID:    user.ID,
-				Name:  user.Name,
-				Email: user.Email,
-			}
+		user, err := p.user.FindByID(ctx, products[i].UserID.Hex())
+		if err != nil {
+			continue
+		}
+		products[i].User = &model.UserResponseOnProduct{
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+		}
 	}
 
 	return products, nil

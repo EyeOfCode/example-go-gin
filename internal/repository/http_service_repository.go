@@ -6,23 +6,23 @@ import (
 	"time"
 )
 
-type ServiceRepository interface {
+type HttpServiceRepository  interface {
 	Get(ctx context.Context, url string) error
 }
 
-type serviceRepository struct {
+type httpServiceRepository  struct {
 	client *http.Client
 }
 
-func NewServiceRepository() ServiceRepository {
-	return &serviceRepository{
+func NewHttpServiceRepository () HttpServiceRepository  {
+	return &httpServiceRepository {
 		client: &http.Client{
 			Timeout: 5 * time.Second,
 		},
 	}
 }
 
-func (s *serviceRepository) Get(ctx context.Context, url string) error {
+func (s *httpServiceRepository ) Get(ctx context.Context, url string) error {
 	res, err := http.Get(url)
 	if err != nil {
 		return err
