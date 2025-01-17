@@ -6,7 +6,7 @@ import (
 
 // @Description Health check response
 type HealthHandler struct {
-    Status string `json:"status" example:"ok"`
+	Status string `json:"status" example:"ok"`
 }
 
 // @Summary Health check endpoint
@@ -17,5 +17,5 @@ type HealthHandler struct {
 // @Success 200 {object} HealthHandler
 // @Router /health [get]
 func (s *HealthHandler) HealthCheck(c *gin.Context) {
-    c.JSON(200, HealthHandler{Status: "ok"})
+	c.JSON(200, HealthHandler{Status: "ok"})
 }

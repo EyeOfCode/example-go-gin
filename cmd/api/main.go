@@ -6,7 +6,7 @@
 // @contact.name API Support
 // @contact.email champuplove@gmail.com
 
-// @host localhost:8000
+// @host ${DOMAIN}
 // @BasePath /api/v1
 // @schemes http https
 // @securityDefinitions.apikey Bearer
@@ -30,19 +30,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"example-go-project/docs"
-	"example-go-project/internal/api"
+	"example-go-project/internal/handlers"
+	"example-go-project/internal/repository"
+	"example-go-project/internal/routers"
+	"example-go-project/internal/service"
 	"example-go-project/pkg/config"
 	"example-go-project/pkg/database"
 	"example-go-project/pkg/utils"
-
-	pingHandler "example-go-project/internal/handlers/ping"
-	productHandler "example-go-project/internal/handlers/product"
-	uploadHandler "example-go-project/internal/handlers/upload"
-	userHandler "example-go-project/internal/handlers/user"
-	fileRepository "example-go-project/internal/repository/files"
-	productRepository "example-go-project/internal/repository/product"
-	serviceRepository "example-go-project/internal/repository/service"
-	userRepository "example-go-project/internal/repository/user"
 )
 
 func setupMongoDB(cfg *config.Config) (*mongo.Client, error) {
@@ -63,7 +57,7 @@ func setupMongoDB(cfg *config.Config) (*mongo.Client, error) {
 	return client, nil
 }
 
-func setupServer(cfg *config.Config) (*api.Application, error) {
+func setupServer(cfg *config.Config) (*routers.Application, error) {
 	// Set Gin mode to release
 	gin.SetMode(gin.DebugMode)
 
@@ -71,8 +65,8 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 
 	allowCredentials := false
 	if cfg.ServerState == "production" {
-			gin.SetMode(gin.ReleaseMode)
-			allowCredentials = true
+		gin.SetMode(gin.ReleaseMode)
+		allowCredentials = true
 	}
 
 	// Create Gin router
@@ -81,13 +75,13 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 	utils.SetupValidator()
 
 	router.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"*"},
-        AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-        AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
-        ExposeHeaders:    []string{"Content-Length"},
-        AllowCredentials: allowCredentials,
-        MaxAge:          12 * time.Hour,
-    }))
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: allowCredentials,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// Setup MongoDB
 	mongoClient, err := setupMongoDB(cfg)
@@ -97,25 +91,30 @@ func setupServer(cfg *config.Config) (*api.Application, error) {
 
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
-	userRepo := userRepository.NewUserRepository(db)
-	productRepo := productRepository.NewProductRepository(db, userRepo)
-	serviceRepo := serviceRepository.NewServiceRepository()
-	fileRepo := fileRepository.NewLocalFileRepository(db)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	fileRepo := repository.NewLocalFileRepository(db, cfg)
+
+	// Initialize services
+	fileService := service.NewFileService(fileRepo)
+	httpService := service.NewHttpService()
+	productService := service.NewProductService(productRepo)
+	userService := service.NewUserService(userRepo)
 
 	// Initialize handlers
-	userHandler := userHandler.NewUserHandler(userRepo)
-	productHandler := productHandler.NewProductHandler(productRepo, userRepo)
-	pingHandler := pingHandler.NewPingHandler(serviceRepo)
-	uploadHandler := uploadHandler.NewUploadHandler(fileRepo, userRepo)
+	userHandler := handlers.NewUserHandler(userService)
+	productHandler := handlers.NewProductHandler(productService, userService)
+	pingHandler := handlers.NewPingHandler(httpService)
+	uploadHandler := handlers.NewUploadHandler(fileService, userService)
 
 	// Create application instance with all dependencies
-	application := &api.Application{
-		Router:      router,
-		UserHandler: userHandler,
+	application := &routers.Application{
+		Router:         router,
+		UserHandler:    userHandler,
 		ProductHandler: productHandler,
-		PingHandler: pingHandler,
-		UploadHandler: uploadHandler,
-		Config:      cfg,
+		PingHandler:    pingHandler,
+		UploadHandler:  uploadHandler,
+		Config:         cfg,
 	}
 
 	// Setup routes

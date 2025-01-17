@@ -1,4 +1,6 @@
-# example golang
+# Example golang gin
+
+###### Example project go gin api by EyeOfCode
 
 ## stack
 
@@ -10,15 +12,14 @@
 - jwt
 - air
 - rate limit
-- websocket
 - upload file
+- golangci-lint
+- redis
 
 ## setup
 
 - install go and setup path
 - install docker and docker-compose
-- install and setup air $go install github.com/air-verse/air@latest
-- install swag $go install github.com/swaggo/swag/cmd/swag@latest
 
 ### create file .air.toml
 
@@ -27,7 +28,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-cmd = "go build -o ./tmp/main.exe ./cmd/app"
+cmd = "go build -o ./tmp/main.exe ./cmd/api"
 bin = "tmp/main.exe"
 full_bin = "./tmp/main.exe"
 include_ext = ["go"]
@@ -41,20 +42,21 @@ clear_on_rebuild = true
 - init project $go mod init example-go-project
 - init package $go mod tidy
 - cp .env.example .env
-- init swagger $swag init -g cmd/app/main.go
-- init cors $go get github.com/gin-contrib/cors
-- build $go build cmd/app/main.go
+- init swagger $swag init -g cmd/api/main.go
+- build $go build cmd/api/main.go
+- lint $golangci-lint run
+- format $gofmt -w .
 
 ## how to use
 
 - run $docker-compose up -d --build (init project or db)
-- run app $go run cmd/app/main.go or use $air (air is build and compiler follow code change)
+- run app $go run cmd/api/main.go or use $air (air is build and compiler follow code change)
 
 ## run test
 
-- $go test ./internal/handlers/user/test
-- $go test -race ./internal/handlers/user/test -v -cover
-- $go test -race ./internal/handlers/user/test -v -coverprofile=coverage.out && go tool cover -html=coverage.out
+- $go test ./internal/test
+- $go test -race ./internal/test -v -cover
+- $go test -race ./internal/test -v -coverprofile=coverage.out && go tool cover -html=coverage.out
 
 ## Feature
 
@@ -72,3 +74,19 @@ clear_on_rebuild = true
 - relation db [x]
 - permission roles [x]
 - pagination [x]
+- redis [ ]
+- refresh token [ ]
+
+## other
+
+$go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+$go install github.com/cosmtrek/air@latest
+$go install github.com/swaggo/swag/cmd/swag@latest
+
+### TODO Fix improve src
+
+- [x] user
+- [ ] product
+- [ ] upload
+- [x] helper
+- [x] ping

@@ -1,33 +1,28 @@
-package api
+package routers
 
 import (
 	_ "example-go-project/docs"
 	"example-go-project/pkg/config"
+	"example-go-project/pkg/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
-	helperHandler "example-go-project/internal/handlers/helper"
-	pingHandler "example-go-project/internal/handlers/ping"
-	productHandlers "example-go-project/internal/handlers/product"
-	uploadHandler "example-go-project/internal/handlers/upload"
-	userHandler "example-go-project/internal/handlers/user"
+	"example-go-project/internal/handlers"
 	"example-go-project/internal/middleware"
-	"example-go-project/pkg/utils"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Application struct {
-	Router      *gin.Engine
-	helperHandler *helperHandler.HealthHandler
-	UserHandler *userHandler.UserHandler
-	AuthHandler *utils.AuthHandler
-	PingHandler *pingHandler.PingHandler
-	ProductHandler *productHandlers.ProductHandler
-	UploadHandler *uploadHandler.UploadHandler
-	Config      *config.Config
+	Router         *gin.Engine
+	helperHandler  *handlers.HealthHandler
+	UserHandler    *handlers.UserHandler
+	PingHandler    *handlers.PingHandler
+	ProductHandler *handlers.ProductHandler
+	UploadHandler  *handlers.UploadHandler
+	Config         *config.Config
 }
 
 func (app *Application) SetupRoutes() {
@@ -74,10 +69,10 @@ func (app *Application) SetupRoutes() {
 	adminProtected := v1.Group("")
 	adminProtected.Use(middleware.JWT(authJwt, utils.AdminRole))
 	{
-		adminProtected.POST("/local_upload",  app.UploadHandler.UploadMultipleLocalFiles)
+		adminProtected.POST("/local_upload", app.UploadHandler.UploadMultipleLocalFiles)
 		adminProtected.DELETE("/local_upload/:id", app.UploadHandler.DeleteFile)
 		adminProtected.GET("/local_upload", app.UploadHandler.GetFileAll)
-		
+
 		admin := adminProtected.Group("/user")
 		{
 			admin.DELETE("/profile/:id", app.UserHandler.DeleteUser)

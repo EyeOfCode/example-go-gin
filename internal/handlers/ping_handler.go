@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"example-go-project/internal/dto"
-	serviceRepository "example-go-project/internal/repository/service"
+	"example-go-project/internal/service"
 	"example-go-project/pkg/utils"
 	"net/http"
 	"time"
@@ -12,12 +12,12 @@ import (
 )
 
 type PingHandler struct {
-	serviceRepo serviceRepository.ServiceRepository
+	httpService service.HttpService
 }
 
-func NewPingHandler(serviceRepo serviceRepository.ServiceRepository) *PingHandler {
+func NewPingHandler(httpService service.HttpService) *PingHandler {
 	return &PingHandler{
-		serviceRepo: serviceRepo,
+		httpService: httpService,
 	}
 }
 
@@ -46,7 +46,7 @@ func (p *PingHandler) Ping(c *gin.Context) {
 	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := p.serviceRepo.Get(c, req.Url)
+	err := p.httpService.Get(c, req.Url)
 	if err != nil {
 		utils.SendError(c, http.StatusBadRequest, err.Error())
 		return

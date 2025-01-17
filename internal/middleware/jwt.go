@@ -35,13 +35,13 @@ func JWT(auth *utils.AuthHandler, role ...utils.Role) gin.HandlerFunc {
 		if len(role) > 0 {
 			roleSlice := make([]utils.Role, len(claims.Roles))
 			for i, r := range claims.Roles {
-					roleSlice[i] = utils.Role(r)
+				roleSlice[i] = utils.Role(r)
 			}
 
 			if !utils.IsValidRole(roleSlice, role) {
-					utils.SendError(c, http.StatusForbidden, "Insufficient permissions")
-					c.Abort()
-					return
+				utils.SendError(c, http.StatusForbidden, "Insufficient permissions")
+				c.Abort()
+				return
 			}
 		}
 

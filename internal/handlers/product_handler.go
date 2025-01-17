@@ -3,9 +3,7 @@ package handlers
 import (
 	"context"
 	"example-go-project/internal/dto"
-	"example-go-project/internal/model"
-	productRepository "example-go-project/internal/repository/product"
-	userRepository "example-go-project/internal/repository/user"
+	"example-go-project/internal/service"
 	"example-go-project/pkg/utils"
 	"net/http"
 	"time"
@@ -18,14 +16,14 @@ import (
 )
 
 type ProductHandler struct {
-	productRepo productRepository.ProductRepository
-	userRepo userRepository.UserRepository
+	productService *service.ProductService
+	userService    *service.UserService
 }
 
-func NewProductHandler(productRepo productRepository.ProductRepository, userRepo userRepository.UserRepository) *ProductHandler {
+func NewProductHandler(productService *service.ProductService, userService *service.UserService) *ProductHandler {
 	return &ProductHandler{
-		productRepo: productRepo,
-		userRepo: userRepo,
+		productService: productService,
+		userService:    userService,
 	}
 }
 
@@ -51,10 +49,10 @@ func (p *ProductHandler) CreateProduct(c *gin.Context) {
 		return
 	}
 
-	user, err := p.userRepo.FindByID(ctx, userIDStr)
+	user, err := p.userService.FindByID(ctx, userIDStr)
 	if err != nil && err != mongo.ErrNoDocuments {
-			utils.SendError(c, http.StatusInternalServerError, "User not found")
-			return
+		utils.SendError(c, http.StatusInternalServerError, "User not found")
+		return
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -68,25 +66,14 @@ func (p *ProductHandler) CreateProduct(c *gin.Context) {
 		utils.SendError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	now := time.Now()
-	payload := &model.Product{
-		Name:        req.Name,
-		Price:       req.Price,
-		Stock:       req.Stock,
-		UserID:      user.ID,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-	}
-
-	err = p.productRepo.Create(ctx, payload)
+	res, err := p.productService.CreateProduct(ctx, &req, user.ID)
 
 	if err != nil {
 		utils.SendError(c, http.StatusInternalServerError, "Failed to create product")
 		return
 	}
 
-	utils.SendSuccess(c, http.StatusCreated, "Product created successfully")
+	utils.SendSuccess(c, http.StatusCreated, res, "Product created successfully")
 }
 
 // @Summary Get products endpoint
@@ -107,68 +94,68 @@ func (p *ProductHandler) GetProducts(c *gin.Context) {
 
 	var filter dto.ProductFilter
 	if err := c.ShouldBindQuery(&filter); err != nil {
-			utils.SendError(c, http.StatusBadRequest, "Invalid filter parameters")
-			return
+		utils.SendError(c, http.StatusBadRequest, "Invalid filter parameters")
+		return
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-  defer cancel()
+	defer cancel()
 
 	mongoFilter := bson.D{}
 	if filter.Name != "" {
-			mongoFilter = append(mongoFilter, bson.E{
-					Key: "name", 
-					Value: bson.D{{
-							Key: "$regex", 
-							Value: primitive.Regex{Pattern: filter.Name, Options: "i"},
-					}},
-			})
+		mongoFilter = append(mongoFilter, bson.E{
+			Key: "name",
+			Value: bson.D{{
+				Key:   "$regex",
+				Value: primitive.Regex{Pattern: filter.Name, Options: "i"},
+			}},
+		})
 	}
 
 	if filter.Price != nil {
-			mongoFilter = append(mongoFilter, bson.E{
-					Key: "price", 
-					Value: bson.D{{
-							Key: "$gte", 
-							Value: filter.Price,
-					}},
-			})
+		mongoFilter = append(mongoFilter, bson.E{
+			Key: "price",
+			Value: bson.D{{
+				Key:   "$gte",
+				Value: filter.Price,
+			}},
+		})
 	}
 
 	if filter.Stock != nil {
-			mongoFilter = append(mongoFilter, bson.E{
-					Key: "stock", 
-					Value: bson.D{{
-							Key: "$gte", 
-							Value: filter.Stock,
-					}},
-			})
+		mongoFilter = append(mongoFilter, bson.E{
+			Key: "stock",
+			Value: bson.D{{
+				Key:   "$gte",
+				Value: filter.Stock,
+			}},
+		})
 	}
 
 	if filter.UserId != "" {
-			mongoFilter = append(mongoFilter, bson.E{
-					Key: "user_id", 
-					Value: filter.UserId,
-			})
+		mongoFilter = append(mongoFilter, bson.E{
+			Key:   "user_id",
+			Value: filter.UserId,
+		})
 	}
 
-	total, err := p.productRepo.Count(ctx, mongoFilter)
-    if err != nil {
-        utils.SendError(c, http.StatusInternalServerError, "Failed to count users: "+err.Error())
-        return
-    }
+	total, err := p.productService.Count(ctx, mongoFilter)
+	if err != nil {
+		utils.SendError(c, http.StatusInternalServerError, "Failed to count users: "+err.Error())
+		return
+	}
 
-    opts := options.Find().
-        SetSkip(int64((page - 1) * pageSize)).
-        SetLimit(int64(pageSize)).
-        SetSort(bson.D{{Key: "created_at", Value: -1}})
+	opts := options.Find().
+		SetSkip(int64((page - 1) * pageSize)).
+		SetLimit(int64(pageSize)).
+		SetSort(bson.D{{Key: "created_at", Value: -1}})
 
-    products, err := p.productRepo.FindAll(ctx, mongoFilter, opts)
-    if err != nil {
-        utils.SendError(c, http.StatusInternalServerError, err.Error())
-        return
-    }
+	products, err := p.productService.FindAll(ctx, mongoFilter, opts)
+	if err != nil {
+		utils.SendError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-    response := utils.CreatePagination(page, pageSize, total, products)
-    utils.SendSuccess(c, http.StatusOK, response)
+	response := utils.CreatePagination(page, pageSize, total, products)
+	utils.SendSuccess(c, http.StatusOK, response)
 }
