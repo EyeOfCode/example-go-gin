@@ -4,6 +4,7 @@ import (
 	"context"
 	"example-go-project/internal/dto"
 	"example-go-project/internal/service"
+	"example-go-project/pkg/middleware"
 	"example-go-project/pkg/utils"
 	"net/http"
 	"time"
@@ -11,7 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -37,21 +37,13 @@ func NewProductHandler(productService *service.ProductService, userService *serv
 // @Router /product [post]
 func (p *ProductHandler) CreateProduct(c *gin.Context) {
 	var req dto.CreateProductRequest
-	userID, _ := c.Get("userID")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	userIDStr, ok := userID.(string)
-
+	user, ok := middleware.GetUserFromContext(c)
 	if !ok {
-		utils.SendError(c, http.StatusInternalServerError, "Failed to get user ID")
-		return
-	}
-
-	user, err := p.userService.FindByID(ctx, userIDStr)
-	if err != nil && err != mongo.ErrNoDocuments {
-		utils.SendError(c, http.StatusInternalServerError, "User not found")
+		utils.SendError(c, http.StatusUnauthorized, "User not found")
 		return
 	}
 

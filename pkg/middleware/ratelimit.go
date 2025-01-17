@@ -61,8 +61,10 @@ func RateLimit(rate int, interval time.Duration) gin.HandlerFunc {
 		key := c.ClientIP()
 
 		// or use user id on jwt
-		// if user, exists := c.Get("user"); exists {
-		//     key = user.(string) // change user to string
+		// user, ok := GetUserFromContext(c)
+		// if !ok {
+		// 	utils.SendError(c, http.StatusUnauthorized, "User not found")
+		// 	return
 		// }
 
 		if !limiter.Allow(key) {

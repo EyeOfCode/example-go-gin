@@ -15,10 +15,14 @@ type Config struct {
 	MongoDBURI      string
 	MongoDBDatabase string
 
-	JWTSecretKey string
-	JWTExpiresIn string
+	JWTSecretKey  string
+	JWTExpiresIn  string
+	JWTRefreshKey string
+	JWTRefreshIn  string
 
 	BaseUrl string
+
+	RedisURL string
 }
 
 func LoadConfig() *Config {
@@ -35,9 +39,13 @@ func LoadConfig() *Config {
 		MongoDBURI:      os.Getenv("MONGO_URI"),
 		MongoDBDatabase: os.Getenv("MONGO_DB_NAME"),
 
-		JWTSecretKey: os.Getenv("JWT_SECRET"),
-		JWTExpiresIn: os.Getenv("JWT_EXPIRY"),
+		JWTSecretKey:  os.Getenv("JWT_SECRET"),
+		JWTExpiresIn:  os.Getenv("JWT_EXPIRY"),
+		JWTRefreshKey: os.Getenv("JWT_REFRESH_SECRET"),
+		JWTRefreshIn:  os.Getenv("JWT_REFRESH_EXPIRY"),
 
 		BaseUrl: os.Getenv("DOMAIN"),
+
+		RedisURL: os.Getenv("REDIS_URL"),
 	}
 }

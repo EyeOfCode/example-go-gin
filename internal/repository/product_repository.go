@@ -26,7 +26,7 @@ func NewProductRepository(db *mongo.Database) ProductRepository {
 	}
 }
 
-func (p *productRepository) Create(ctx context.Context, product *model.Product) (*model.Product,error) {
+func (p *productRepository) Create(ctx context.Context, product *model.Product) (*model.Product, error) {
 	res, err := p.collection.InsertOne(ctx, product)
 	if err != nil {
 		return nil, err

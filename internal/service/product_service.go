@@ -25,10 +25,10 @@ func NewProductService(productRepo repository.ProductRepository) *ProductService
 func (p *ProductService) CreateProduct(ctx context.Context, payload *dto.CreateProductRequest, userId primitive.ObjectID) (*model.Product, error) {
 	now := time.Now()
 	req := &model.Product{
-		Name:     payload.Name,
-		Price:    payload.Price,
-		Stock:    payload.Stock,
-		UserID:   userId,
+		Name:      payload.Name,
+		Price:     payload.Price,
+		Stock:     payload.Stock,
+		UserID:    userId,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}

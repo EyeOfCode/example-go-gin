@@ -21,7 +21,7 @@ func NewFileService(fileStoreRepo repository.LocalFileRepository) *FileService {
 	}
 }
 
-func (f *FileService) UploadFile(ctx context.Context, files []*multipart.FileHeader, user *model.User) ([]*model.FileStorage,error) {
+func (f *FileService) UploadFile(ctx context.Context, files []*multipart.FileHeader, user *model.User) ([]*model.FileStorage, error) {
 	res, err := f.fileStoreRepo.Uploads(ctx, files, user)
 	if err != nil {
 		return nil, err

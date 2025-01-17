@@ -36,6 +36,7 @@ import (
 	"example-go-project/internal/service"
 	"example-go-project/pkg/config"
 	"example-go-project/pkg/database"
+	"example-go-project/pkg/middleware"
 	"example-go-project/pkg/utils"
 )
 
@@ -72,7 +73,9 @@ func setupServer(cfg *config.Config) (*routers.Application, error) {
 	// Create Gin router
 	router := gin.Default()
 
-	utils.SetupValidator()
+	if err := utils.SetupValidator(); err != nil {
+		log.Fatalf("Failed to setup validator: %v", err)
+	}
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -89,6 +92,12 @@ func setupServer(cfg *config.Config) (*routers.Application, error) {
 		return nil, err
 	}
 
+	// Setup Redis
+	redisClient, err := database.ConnectRedis(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
 	userRepo := repository.NewUserRepository(db)
@@ -99,13 +108,16 @@ func setupServer(cfg *config.Config) (*routers.Application, error) {
 	fileService := service.NewFileService(fileRepo)
 	httpService := service.NewHttpService()
 	productService := service.NewProductService(productRepo)
-	userService := service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo, redisClient, cfg)
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
 	productHandler := handlers.NewProductHandler(productService, userService)
 	pingHandler := handlers.NewPingHandler(httpService)
 	uploadHandler := handlers.NewUploadHandler(fileService, userService)
+
+	// Initialize middleware
+	authMiddleware := middleware.NewAuthMiddleware(userService, cfg)
 
 	// Create application instance with all dependencies
 	application := &routers.Application{
@@ -114,6 +126,7 @@ func setupServer(cfg *config.Config) (*routers.Application, error) {
 		ProductHandler: productHandler,
 		PingHandler:    pingHandler,
 		UploadHandler:  uploadHandler,
+		AuthMiddleware: authMiddleware,
 		Config:         cfg,
 	}
 

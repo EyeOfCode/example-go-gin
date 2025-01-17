@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"example-go-project/internal/service"
+	"example-go-project/pkg/middleware"
 	"example-go-project/pkg/utils"
 	"net/http"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UploadHandler struct {
@@ -34,19 +34,12 @@ func NewUploadHandler(fileService *service.FileService, userService *service.Use
 // @Param       files formData []file true "Multiple files to upload"
 // @Router      /local_upload [post]
 func (u *UploadHandler) UploadMultipleLocalFiles(c *gin.Context) {
-	userID, _ := c.Get("userID")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	userIDStr, ok := userID.(string)
+	user, ok := middleware.GetUserFromContext(c)
 	if !ok {
-		utils.SendError(c, http.StatusInternalServerError, "Failed to get user ID")
-		return
-	}
-
-	user, err := u.userService.FindByID(ctx, userIDStr)
-	if err != nil && err != mongo.ErrNoDocuments {
-		utils.SendError(c, http.StatusInternalServerError, "User not found")
+		utils.SendError(c, http.StatusUnauthorized, "User not found")
 		return
 	}
 

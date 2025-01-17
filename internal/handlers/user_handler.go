@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"example-go-project/internal/service"
+	"example-go-project/pkg/middleware"
 	"example-go-project/pkg/utils"
 	"net/http"
-	"os"
 	"time"
 
 	"example-go-project/internal/dto"
@@ -63,21 +63,12 @@ func (u *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Invalid email or password")
-		return
-	}
-
-	auth := utils.NewAuthHandler(os.Getenv("JWT_SECRET"), os.Getenv("JWT_EXPIRY"))
-	token, err := auth.GenerateToken(user.ID.Hex(), user.Roles)
+	tokenPair, err := u.userService.Login(ctx, req.Password, user)
 	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "Failed to generate token")
+		utils.SendError(c, http.StatusUnauthorized, "Invalid password")
 		return
 	}
-	res := gin.H{
-		"token": token,
-	}
-	utils.SendSuccess(c, http.StatusOK, res, "Login successful")
+	utils.SendSuccess(c, http.StatusOK, tokenPair, "Login successful")
 }
 
 // @Summary Register endpoint
@@ -149,20 +140,12 @@ func (u *UserHandler) Register(c *gin.Context) {
 // @Security Bearer
 // @Router /user/profile [get]
 func (u *UserHandler) GetProfile(c *gin.Context) {
-	userID, _ := c.Get("userID")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	userIDStr, ok := userID.(string)
+	user, ok := middleware.GetUserFromContext(c)
 	if !ok {
-		utils.SendError(c, http.StatusInternalServerError, "Failed to get user ID")
-		return
-	}
-
-	user, err := u.userService.FindByID(ctx, userIDStr)
-	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, err.Error())
+		utils.SendError(c, http.StatusUnauthorized, "User not found")
 		return
 	}
 
@@ -233,32 +216,25 @@ func (u *UserHandler) UpdateProfile(c *gin.Context) {
 // @Produce json
 // @Security Bearer
 // @Param id path string true "User ID"
-// @Router /user/profile/{id} [delete]
+// @Router /user/{id} [delete]
 func (u *UserHandler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
-	userID, _ := c.Get("userID")
-
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		utils.SendError(c, http.StatusBadRequest, "Invalid ID format")
-		return
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	user, err := u.userService.FindByID(ctx, objID.Hex())
-	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, err.Error())
+	user, ok := middleware.GetUserFromContext(c)
+	if !ok {
+		utils.SendError(c, http.StatusUnauthorized, "User not found")
 		return
 	}
 
-	if user.ID.Hex() == userID {
+	if user.ID.Hex() == id {
 		utils.SendError(c, http.StatusUnauthorized, "You cannot delete yourself")
 		return
 	}
 
-	if err := u.userService.Delete(ctx, objID); err != nil {
+	if err := u.userService.Delete(ctx, user.ID); err != nil {
 		utils.SendError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -296,4 +272,86 @@ func (u *UserHandler) UserList(c *gin.Context) {
 
 	response := utils.CreatePagination(page, pageSize, total, users)
 	utils.SendSuccess(c, http.StatusOK, response)
+}
+
+// @Summary Refresh endpoint
+// @Description Post the API's refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param request body dto.RefreshTokenRequest true "Refresh token"
+// @Router /auth/refresh [post]
+func (u *UserHandler) RefreshToken(c *gin.Context) {
+	var req dto.RefreshTokenRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		errors := utils.FormatValidationError(err)
+		if len(errors) > 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": errors,
+			})
+		}
+
+		utils.SendError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tokenPair, err := u.userService.RefreshToken(ctx, req.RefreshToken)
+	if err != nil {
+		utils.SendError(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	if tokenPair == nil {
+		utils.SendError(c, http.StatusUnauthorized, "Invalid refresh token")
+		return
+	}
+
+	utils.SendSuccess(c, http.StatusOK, tokenPair, "Refresh token successful")
+}
+
+// @Summary Logout endpoint
+// @Description Post the API's logout
+// @Tags user
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Header 200 {string} X-Refresh-Token "Refresh token for logout"
+// @Param X-Refresh-Token header string true "Refresh token"
+// @Router /user/logout [get]
+func (u *UserHandler) Logout(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Get access token from context
+	token, ok := c.Get("token")
+	if !ok {
+		utils.SendError(c, http.StatusUnauthorized, "Token not found")
+		return
+	}
+
+	// Get refresh token from header
+	refreshToken := c.GetHeader("X-Refresh-Token")
+	if refreshToken == "" {
+		utils.SendError(c, http.StatusBadRequest, "Refresh token is required")
+		return
+	}
+
+	// Call logout service with both tokens
+	tokenStr, ok := token.(string)
+	if !ok {
+		utils.SendError(c, http.StatusInternalServerError, "Token is not a string")
+		return
+	}
+
+	if err := u.userService.Logout(ctx, tokenStr, refreshToken); err != nil {
+		utils.SendError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SendSuccess(c, http.StatusOK, nil, "Logout successful")
 }

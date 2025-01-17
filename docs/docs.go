@@ -46,6 +46,38 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/auth/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Post the API's refresh token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh endpoint",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/auth/register": {
             "post": {
                 "description": "Post the API's register",
@@ -334,6 +366,36 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/user/logout": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Post the API's logout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Logout endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Refresh token",
+                        "name": "X-Refresh-Token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/user/profile": {
             "get": {
                 "security": [
@@ -392,7 +454,9 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {}
-            },
+            }
+        },
+        "/user/{id}": {
             "delete": {
                 "security": [
                     {
@@ -467,6 +531,17 @@ const docTemplate = `{
             ],
             "properties": {
                 "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
                     "type": "string"
                 }
             }

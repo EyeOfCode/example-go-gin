@@ -54,9 +54,9 @@ clear_on_rebuild = true
 
 ## run test
 
-- $go test ./internal/test
-- $go test -race ./internal/test -v -cover
-- $go test -race ./internal/test -v -coverprofile=coverage.out && go tool cover -html=coverage.out
+- $go test ./internal/test/...
+- $go test -race ./internal/test/... -v -cover
+- $go test -race ./internal/test/... -v -coverprofile=coverage.out && go tool cover -html=coverage.out
 
 ## Feature
 
@@ -74,19 +74,11 @@ clear_on_rebuild = true
 - relation db [x]
 - permission roles [x]
 - pagination [x]
-- redis [ ]
-- refresh token [ ]
+- redis [x]
+- refresh token [x]
 
 ## other
 
 $go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 $go install github.com/cosmtrek/air@latest
 $go install github.com/swaggo/swag/cmd/swag@latest
-
-### TODO Fix improve src
-
-- [x] user
-- [ ] product
-- [ ] upload
-- [x] helper
-- [x] ping

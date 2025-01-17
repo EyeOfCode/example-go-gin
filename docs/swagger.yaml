@@ -32,6 +32,13 @@ definitions:
     required:
     - url
     type: object
+  dto.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
   dto.RegisterRequest:
     properties:
       confirm_password:
@@ -97,6 +104,26 @@ paths:
       - application/json
       responses: {}
       summary: Login endpoint
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Post the API's refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Refresh endpoint
       tags:
       - auth
   /auth/register:
@@ -258,6 +285,25 @@ paths:
       summary: Create product endpoint
       tags:
       - product
+  /user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Get the API's delete user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Delete endpoint
+      tags:
+      - admin
   /user/list:
     get:
       consumes:
@@ -286,6 +332,25 @@ paths:
       summary: User list endpoint
       tags:
       - admin
+  /user/logout:
+    get:
+      consumes:
+      - application/json
+      description: Post the API's logout
+      parameters:
+      - description: Refresh token
+        in: header
+        name: X-Refresh-Token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Logout endpoint
+      tags:
+      - user
   /user/profile:
     get:
       consumes:
@@ -300,24 +365,6 @@ paths:
       tags:
       - user
   /user/profile/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Get the API's delete user
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - Bearer: []
-      summary: Delete endpoint
-      tags:
-      - admin
     put:
       consumes:
       - application/json
