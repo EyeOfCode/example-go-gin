@@ -12,7 +12,7 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, user *model.User) error
-	Update(ctx context.Context, user *model.User) error
+	Update(ctx context.Context, payload bson.M, id primitive.ObjectID) (*model.User, error)
 	Delete(ctx context.Context, id primitive.ObjectID) error
 	FindOne(ctx context.Context, query bson.M) (*model.User, error)
 	FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.User, error)
@@ -44,14 +44,26 @@ func (r *userRepository) FindOne(ctx context.Context, query bson.M) (*model.User
 	return &user, nil
 }
 
-func (r *userRepository) Update(ctx context.Context, user *model.User) error {
-	_, err := r.collection.UpdateOne(
+func (r *userRepository) Update(ctx context.Context, payload bson.M, id primitive.ObjectID) (*model.User, error) {
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	var updatedUser model.User
+	err := r.collection.FindOneAndUpdate(
 		ctx,
-		bson.M{"_id": user.ID},
-		bson.M{"$set": user},
-	)
-	return err
+		bson.M{"_id": id},
+		bson.M{
+			"$set": payload,
+			"$currentDate": bson.M{
+				"updated_at": true,
+			},
+		},
+		opts,
+	).Decode(&updatedUser)
+	if err != nil {
+		return nil, err
+	}
+	return &updatedUser, nil
 }
+
 func (r *userRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
 	return err

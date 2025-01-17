@@ -1,4 +1,4 @@
-package repository
+package service
 
 import (
 	"context"
@@ -6,23 +6,23 @@ import (
 	"time"
 )
 
-type HttpServiceRepository  interface {
+type HttpService  interface {
 	Get(ctx context.Context, url string) error
 }
 
-type httpServiceRepository  struct {
+type httpService  struct {
 	client *http.Client
 }
 
-func NewHttpServiceRepository () HttpServiceRepository  {
-	return &httpServiceRepository {
+func NewHttpService () HttpService  {
+	return &httpService {
 		client: &http.Client{
 			Timeout: 5 * time.Second,
 		},
 	}
 }
 
-func (s *httpServiceRepository ) Get(ctx context.Context, url string) error {
+func (s *httpService ) Get(ctx context.Context, url string) error {
 	res, err := http.Get(url)
 	if err != nil {
 		return err

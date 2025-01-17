@@ -71,16 +71,12 @@ func (u *UserService) Create(ctx context.Context, payload *dto.RegisterRequest) 
 	}
 	return res, nil
 }
-
-func (u *UserService) Update(ctx context.Context, payload *dto.UpdateProfileRequest, id primitive.ObjectID) (*model.User, error) {
-	now := time.Now()
-	user := &model.User{
-		ID: id,
-		Name:      payload.Name,
-		UpdatedAt: now,
+func (u *UserService) Update(ctx context.Context, payload *dto.UpdateProfileRequest, id primitive.ObjectID) (*model.User, error) {	
+	req := bson.M{
+		"name": payload.Name,
 	}
-	
-	if err := u.userRepo.Update(ctx, user); err != nil {
+	user, err := u.userRepo.Update(ctx, req, id)
+	if err != nil {
 		return nil, err
 	}
 

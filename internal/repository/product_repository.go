@@ -3,60 +3,64 @@ package repository
 import (
 	"context"
 	"example-go-project/internal/model"
-	"example-go-project/internal/repository"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ProductRepository interface {
-	Create(ctx context.Context, product *model.Product) error
-	FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.Product, error)
+	Create(ctx context.Context, product *model.Product) (*model.Product, error)
+	FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]*model.Product, error)
 	Count(ctx context.Context, query bson.D) (int64, error)
 }
 
 type productRepository struct {
 	collection *mongo.Collection
-	user       repository.UserRepository
 }
 
-func NewProductRepository(db *mongo.Database, user repository.UserRepository) ProductRepository {
+func NewProductRepository(db *mongo.Database) ProductRepository {
 	return &productRepository{
 		collection: db.Collection("products"),
-		user:       user,
 	}
 }
 
-func (p *productRepository) Create(ctx context.Context, product *model.Product) error {
-	_, err := p.collection.InsertOne(ctx, product)
-	return err
+func (p *productRepository) Create(ctx context.Context, product *model.Product) (*model.Product,error) {
+	res, err := p.collection.InsertOne(ctx, product)
+	if err != nil {
+		return nil, err
+	}
+	productId := res.InsertedID.(primitive.ObjectID)
+	product.ID = productId
+	return product, nil
 }
 
-func (p *productRepository) FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.Product, error) {
-	cursor, err := p.collection.Find(ctx, query, opts)
+func (p *productRepository) FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]*model.Product, error) {
+	pipeline := mongo.Pipeline{
+		{{Key: "$match", Value: query}},
+		{{Key: "$sort", Value: bson.D{{Key: "created_at", Value: -1}}}},
+		{{Key: "$skip", Value: opts.Skip}},
+		{{Key: "$limit", Value: opts.Limit}},
+		{{Key: "$lookup", Value: bson.M{
+			"from":         "users",
+			"localField":   "user_id",
+			"foreignField": "_id",
+			"as":           "user",
+		}}},
+		{{Key: "$unwind", Value: "$user"}},
+	}
+
+	cursor, err := p.collection.Aggregate(ctx, pipeline)
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
-	var products []model.Product
+	var products []*model.Product
 	if err := cursor.All(ctx, &products); err != nil {
 		return nil, err
 	}
-
-	for i := range products {
-		user, err := p.user.FindByID(ctx, products[i].UserID.Hex())
-		if err != nil {
-			continue
-		}
-		products[i].User = &model.UserResponseOnProduct{
-			ID:    user.ID,
-			Name:  user.Name,
-			Email: user.Email,
-		}
-	}
-
 	return products, nil
 }
 

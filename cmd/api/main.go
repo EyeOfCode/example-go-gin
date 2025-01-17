@@ -92,27 +92,28 @@ func setupServer(cfg *config.Config) (*routers.Application, error) {
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
 	userRepo := repository.NewUserRepository(db)
-	// productRepo := repository.NewProductRepository(db, userRepo)
-	// serviceRepo := repository.NewHttpServiceRepository()
-	// fileRepo := repository.NewLocalFileRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	fileRepo := repository.NewLocalFileRepository(db, cfg)
 
 	// Initialize services
-	// fileService := service.NewFileService(fileRepo)
+	fileService := service.NewFileService(fileRepo)
+	httpService := service.NewHttpService()
+	productService := service.NewProductService(productRepo)
 	userService := service.NewUserService(userRepo)
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
-	// productHandler := handlers.NewProductHandler(productRepo, userRepo)
-	// pingHandler := handlers.NewPingHandler(serviceRepo)
-	// uploadHandler := handlers.NewUploadHandler(fileService, userRepo)
+	productHandler := handlers.NewProductHandler(productService, userService)
+	pingHandler := handlers.NewPingHandler(httpService)
+	uploadHandler := handlers.NewUploadHandler(fileService, userService)
 
 	// Create application instance with all dependencies
 	application := &routers.Application{
 		Router:         router,
 		UserHandler:    userHandler,
-		// ProductHandler: productHandler,
-		// PingHandler:    pingHandler,
-		// UploadHandler:  uploadHandler,
+		ProductHandler: productHandler,
+		PingHandler:    pingHandler,
+		UploadHandler:  uploadHandler,
 		Config:         cfg,
 	}
 

@@ -8,7 +8,6 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// SendSuccess sends a successful JSON response
 func SendSuccess(c *gin.Context, status int, data interface{}, message ...string) {
 	response := gin.H{
 		"success": true,
@@ -21,14 +20,11 @@ func SendSuccess(c *gin.Context, status int, data interface{}, message ...string
 
 	c.JSON(status, response)
 }
-
-// SendError sends an error JSON response
 func SendError(c *gin.Context, status int, message string) {
-	response := gin.H{
+	c.JSON(status, gin.H{
 		"success": false,
 		"error":   message,
-	}
-	c.JSON(status, response)
+	})
 }
 
 func FormatValidationError(err error) []string {

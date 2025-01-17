@@ -17,6 +17,8 @@ type Config struct {
 
 	JWTSecretKey string
 	JWTExpiresIn string
+
+	BaseUrl string
 }
 
 func LoadConfig() *Config {
@@ -35,5 +37,7 @@ func LoadConfig() *Config {
 
 		JWTSecretKey: os.Getenv("JWT_SECRET"),
 		JWTExpiresIn: os.Getenv("JWT_EXPIRY"),
+
+		BaseUrl: os.Getenv("DOMAIN"),
 	}
 }

@@ -2,26 +2,26 @@ package handlers
 
 import (
 	"context"
-	fileRepository "example-go-project/internal/repository/files"
-	userRepository "example-go-project/internal/repository/user"
+	"example-go-project/internal/service"
 	"example-go-project/pkg/utils"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UploadHandler struct {
-	fileRepo fileRepository.LocalFileRepository
-	userRepo userRepository.UserRepository
+	fileService *service.FileService
+	userService *service.UserService
 }
 
-func NewUploadHandler(fileRepo fileRepository.LocalFileRepository, userRepo userRepository.UserRepository) *UploadHandler {
+func NewUploadHandler(fileService *service.FileService, userService *service.UserService) *UploadHandler {
 	return &UploadHandler{
-		fileRepo: fileRepo,
-		userRepo: userRepo,
+		fileService: fileService,
+		userService: userService,
 	}
 }
 
@@ -44,7 +44,7 @@ func (u *UploadHandler) UploadMultipleLocalFiles(c *gin.Context) {
 		return
 	}
 
-	user, err := u.userRepo.FindByID(ctx, userIDStr)
+	user, err := u.userService.FindByID(ctx, userIDStr)
 	if err != nil && err != mongo.ErrNoDocuments {
 		utils.SendError(c, http.StatusInternalServerError, "User not found")
 		return
@@ -62,7 +62,7 @@ func (u *UploadHandler) UploadMultipleLocalFiles(c *gin.Context) {
 		return
 	}
 
-	filesInfo, err := u.fileRepo.Uploads(ctx, files, user)
+	filesInfo, err := u.fileService.UploadFile(ctx, files, user)
 	if err != nil {
 		utils.SendError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -86,7 +86,19 @@ func (u *UploadHandler) DeleteFile(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := u.fileRepo.Delete(ctx, id)
+	ObjID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		utils.SendError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	resFile, err := u.fileService.FindById(ctx, ObjID)
+	if err != nil {
+		utils.SendError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = u.fileService.DeleteFile(ctx, resFile.ID.Hex())
 	if err != nil {
 		utils.SendError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -106,7 +118,7 @@ func (u *UploadHandler) GetFileAll(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	files, err := u.fileRepo.FindAll(ctx, bson.D{}, nil)
+	files, err := u.fileService.FindAll(ctx, bson.D{}, nil)
 	if err != nil {
 		utils.SendError(c, http.StatusInternalServerError, err.Error())
 		return
